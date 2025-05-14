@@ -1,0 +1,82 @@
+name: Build React Native App
+
+on:
+  push:
+    branches: [ "main" ] # Déclenchement lors d'un push sur la branche main
+  pull_request:
+    branches: [ "main" ] # Déclenchement lors d'une pull request ciblant la branche main
+  workflow_dispatch: # Permet de déclencher manuellement le workflow depuis l'interface GitHub
+
+jobs:
+  build-android:
+    name: Build Android
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18.x' # Choisissez votre version de Node.js
+
+      - name: Install dependencies
+        run: |
+          npm install
+          cd android && ./gradlew clean # Nettoyer l'ancien build (important)
+
+      - name: Build APK
+        run: cd android && ./gradlew assembleRelease
+        env:
+          SIGNING_KEYSTORE: ${{ secrets.ANDROID_KEYSTORE }}
+          SIGNING_KEY_ALIAS: ${{ secrets.ANDROID_KEY_ALIAS }}
+          SIGNING_KEY_PASSWORD: ${{ secrets.ANDROID_KEY_PASSWORD }}
+          SIGNING_STORE_PASSWORD: ${{ secrets.ANDROID_STORE_PASSWORD }}
+
+      - name: Upload APK
+        uses: actions/upload-artifact@v4
+        with:
+          name: android-release-apk
+          path: android/app/build/outputs/apk/release/app-release.apk
+
+  build-ios:
+    name: Build iOS
+    runs-on: macos-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18.x' # Choisissez votre version de Node.js
+
+      - name: Install dependencies
+        run: npm install
+
+      - name: Install CocoaPods
+        run: |
+          cd ios
+          bundle install --retry 3 --jobs 4 # Utilisation de Bundler (recommandé)
+          bundle exec pod install
+
+      - name: Build iOS app
+        run: |
+          cd ios
+          xcodebuild -workspace YourAppName.xcworkspace \
+            -scheme YourAppName \
+            -configuration Release \
+            -sdk iphoneos \
+            CODE_SIGN_IDENTITY="${{ secrets.IOS_CODE_SIGN_IDENTITY }}" \
+            PROVISIONING_PROFILE="${{ secrets.IOS_PROVISIONING_PROFILE }}"
+        env:
+          DEVELOPER_CERTIFICATE: ${{ secrets.IOS_DEVELOPER_CERTIFICATE }}
+          CERTIFICATE_PASSWORD: ${{ secrets.IOS_CERTIFICATE_PASSWORD }}
+
+      - name: Upload IPA
+        uses: actions/upload-artifact@v4
+        with:
+          name: ios-release-ipa
+          path: ios/build/Build/Products/Release-iphoneos/YourAppName.ipa
