@@ -74,18 +74,26 @@ jobs:
         run: |
           cd ios
           xcodebuild -workspace ${{ env.APP_NAME }}.xcworkspace -scheme ${{ env.APP_NAME }} -configuration Release -sdk iphoneos \
-            -derivedDataPath build \
+            -archivePath build/${{ env.APP_NAME }}.xcarchive archive \
             CODE_SIGN_IDENTITY="${{ secrets.IOS_CODE_SIGN_IDENTITY }}" \
             PROVISIONING_PROFILE="${{ secrets.IOS_PROVISIONING_PROFILE }}"
         env:
           DEVELOPER_CERTIFICATE: ${{ secrets.IOS_DEVELOPER_CERTIFICATE }}
           CERTIFICATE_PASSWORD: ${{ secrets.IOS_CERTIFICATE_PASSWORD }}
 
+      - name: Export IPA from archive
+        run: |
+            cd ios
+            xcodebuild -exportArchive -archivePath build/${{ env.APP_NAME }}.xcarchive -exportPath build/ipa \
+              -exportProvisioningProfile "${{ secrets.IOS_PROVISIONING_PROFILE_NAME }}" \
+              -exportSigningIdentity "${{ secrets.IOS_CODE_SIGN_IDENTITY }}" \
+              -exportTeam "${{ secrets.IOS_TEAM_ID }}"  
+              
       - name: Upload IPA
         uses: actions/upload-artifact@v4
         with:
           name: ios-release-ipa
-          path: ios/build/Build/Products/Release-iphoneos/${{ env.APP_NAME }}.ipa
+          path: ios/build/ipa/${{ env.APP_NAME }}.ipa
 
       - name: listings
         run: |
