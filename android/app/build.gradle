@@ -87,10 +87,10 @@ android {
     }
     signingConfigs {
         debug {
-            storeFile file('debug.keystore')
-            storePassword 'android'
+            storeFile file('../my-release-key.keystore')
+            storePassword 'lamanu'
             keyAlias 'androiddebugkey'
-            keyPassword 'android'
+            keyPassword 'lamanu'
         }
     }
     buildTypes {
