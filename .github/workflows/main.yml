@@ -68,13 +68,11 @@ jobs:
 
       - name: Clean Xcode build
         run: |
-          cd ios
-          xcodebuild -workspace ${{ env.APP_NAME }}.xcworkspace -scheme ${{ env.APP_NAME }} -configuration Release -sdk iphoneos clean
+          xcodebuild -workspace $GITHUB_WORKSPACE/ios/${{ env.APP_NAME }}.xcworkspace -scheme ${{ env.APP_NAME }} -configuration Release -sdk iphoneos clean
 
       - name: Build iOS app
         run: |
-          cd ios
-          xcodebuild -workspace ${{ env.APP_NAME }}.xcworkspace -scheme ${{ env.APP_NAME }} -configuration Release -sdk iphoneos \
+          xcodebuild -workspace $GITHUB_WORKSPACE/ios/${{ env.APP_NAME }}.xcworkspace -scheme ${{ env.APP_NAME }} -configuration Release -sdk iphoneos \
             CODE_SIGN_IDENTITY="${{ secrets.IOS_CODE_SIGN_IDENTITY }}" \
             PROVISIONING_PROFILE="${{ secrets.IOS_PROVISIONING_PROFILE }}"
         env:
