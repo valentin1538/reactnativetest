@@ -68,6 +68,8 @@ jobs:
 
       - name: Clean Xcode build
         run: |
+          pwd
+          ls -l ios
           xcodebuild -workspace $GITHUB_WORKSPACE/ios/${{ env.APP_NAME }}.xcworkspace -scheme ${{ env.APP_NAME }} -configuration Release -sdk iphoneos clean
 
       - name: Build iOS app
