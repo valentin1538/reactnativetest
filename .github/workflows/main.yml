@@ -85,11 +85,13 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: ios-release-ipa
-          path: ios/build/Products/Release-iphoneos/${{ env.APP_NAME }}.ipa
+          path: ios/build/Build/Products/Release-iphoneos/${{ env.APP_NAME }}.ipa
 
       - name: listings
         run: |
-          ls -l
           ls -l ios/
           ls -l ios/build/
+          ls -l ios/build/Build/
+          ls -l ios/build/Build/Products/
+          ls -l ios/build/Build/Products/Release-iphoneos/
           find . -name "*.ipa"
