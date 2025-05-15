@@ -68,19 +68,13 @@ jobs:
 
       - name: Clean Xcode build
         run: |
-          echo 'pwd'
-          pwd
-          echo 'ls -l ios'
-          ls -l ios
-          echo 'ls -l ios/${{ env.APP_NAME }}.xcodeproj/'
-          ls -l ios/${{ env.APP_NAME }}.xcodeproj/
-          echo 'ls -l ios/${{ env.APP_NAME }}.xcworkspace/'
-          ls -l ios/${{ env.APP_NAME }}.xcworkspace/
           xcodebuild -workspace ios/${{ env.APP_NAME }}.xcworkspace -scheme ${{ env.APP_NAME }} -configuration Release -sdk iphoneos clean
 
       - name: Build iOS app
         run: |
-          xcodebuild -workspace $GITHUB_WORKSPACE/ios/${{ env.APP_NAME }}.xcworkspace -scheme ${{ env.APP_NAME }} -configuration Release -sdk iphoneos \
+          cd ios
+          xcodebuild -workspace ${{ env.APP_NAME }}.xcworkspace -scheme ${{ env.APP_NAME }} -configuration Release -sdk iphoneos \
+            -derivedDataPath build \
             CODE_SIGN_IDENTITY="${{ secrets.IOS_CODE_SIGN_IDENTITY }}" \
             PROVISIONING_PROFILE="${{ secrets.IOS_PROVISIONING_PROFILE }}"
         env:
@@ -91,4 +85,11 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: ios-release-ipa
-          path: ios/build/Build/Products/Release-iphoneos/${{ env.APP_NAME }}.ipa
+          path: ios/build/Products/Release-iphoneos/${{ env.APP_NAME }}.ipa
+
+      - name: listings
+        run: |
+          ls -l
+          ls -l ios/
+          ls -l ios/build/
+          find . -name "*.ipa"
