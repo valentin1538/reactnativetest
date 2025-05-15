@@ -51,6 +51,48 @@ cd ..
 npx react-native run-ios
 ```
 
+# préparation au premier build
+
+## Android
+Générer une clé de test pour l'application, sinon utiliser votre clé
+```bash
+keytool -genkeypair -v -keystore my-release-key.keystore -alias my-key-alias -keyalg RSA -keysize 2048 -validity 10000
+```
+lancer la commande depuis le dossier android, elle crée le fichier *my-release-key.keystore*  
+
+Paramétrer le fichier gradle *android/app/build.gradle*
+```gradle
+android {
+    ...
+    signingConfigs {
+        release {
+            storeFile file("../my-release-key.keystore")
+            storePassword "votre_mot_de_passe_keystore"
+            keyAlias "my-key-alias"
+            keyPassword "votre_mot_de_passe_clé"
+        }
+    }
+    buildTypes {
+        release {
+            ...
+            signingConfig signingConfigs.release
+        }
+    }
+    ...
+}
+```
+Remplacez *"votre_mot_de_passe_keystore"* et *"votre_mot_de_passe_clé"* par les mots de passe que vous avez définis lors de la création de la clé, et assurez-vous que le chemin vers *my-release-key.keystore* est correct (ici, on suppose qu'il est à la racine du dossier *android*).
+
+Générer le bundle depuis la racine du projet 
+```bash
+npx react-native bundle --platform android --dev false --entry-file index.js --bundle-output android/app/build/outputs/bundle/release/app-release.bundle --assets-dest android/app/build/intermediates/assets/release
+```
+Puis assembler l'APK
+```bash
+cd android
+./gradlew assembleRelease
+cd ..
+```
 ---
 ---
 ---
