@@ -9,7 +9,7 @@ npm -v
 ## pour android
 - un JDK
 - android studio
-- les cvariables d'environnements pour android et android-sdk
+- les variables d'environnement pour android et android-sdk
 
 ## pour IoS
 - Xcode
