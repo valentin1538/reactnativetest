@@ -73,7 +73,7 @@ jobs:
           echo 'ls -l ios'
           ls -l ios
           echo 'ls -l ios/${{ env.APP_NAME }}.xcodeproj/'
-          ls -l iox/${{ env.APP_NAME }}.xcodeproj/
+          ls -l ios/${{ env.APP_NAME }}.xcodeproj/
           echo 'ls -l ios/${{ env.APP_NAME }}.xcworkspace/'
           ls -l ios/${{ env.APP_NAME }}.xcworkspace/
           xcodebuild -workspace $GITHUB_WORKSPACE/ios/${{ env.APP_NAME }}.xcworkspace -scheme ${{ env.APP_NAME }} -configuration Release -sdk iphoneos clean
