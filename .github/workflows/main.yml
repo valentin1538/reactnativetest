@@ -66,6 +66,12 @@ jobs:
           bundle install --retry 3 --jobs 4
           bundle exec pod install
 
+      - name: List directory contents (before clean)
+        run: ls -l  
+      - name: List iOS directory contents (before clean)
+        run: ls -l ios/
+    
+
       - name: Clean Xcode build
         run: |
           cd ios
