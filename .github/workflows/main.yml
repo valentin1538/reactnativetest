@@ -74,7 +74,7 @@ jobs:
       - name: Build iOS app
         run: |
           cd ios
-          xcodebuild -workspace ${{ env.APP_NAME }}.xcodeproj -scheme ${{ env.APP_NAME }} -configuration Release -sdk iphoneos \
+          xcodebuild -project ${{ env.APP_NAME }}.xcodeproj -scheme ${{ env.APP_NAME }} -configuration Release -sdk iphoneos \
             CODE_SIGN_IDENTITY="${{ secrets.IOS_CODE_SIGN_IDENTITY }}" \
             PROVISIONING_PROFILE="${{ secrets.IOS_PROVISIONING_PROFILE }}"
         env:
