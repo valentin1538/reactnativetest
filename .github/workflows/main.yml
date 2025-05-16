@@ -51,6 +51,7 @@ jobs:
               });
 
               for (const artifact of artifacts.data) {
+                console.log(artifact.name)
                 if (artifact.name.startsWith('android-release-apk')) {
                   await github.rest.actions.deleteArtifact({
                     owner: context.repo.owner,
