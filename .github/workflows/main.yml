@@ -13,6 +13,7 @@ env:
 
 permissions:
   actions: write
+  contents: read 
   
 jobs:
   build-android:
