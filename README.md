@@ -94,6 +94,17 @@ cd android
 ./gradlew assembleRelease
 cd ..
 ```
+
+# développons
+## Configuration de la Navigation avec React Navigation
+Pour gérer la navigation entre les pages, nous allons utiliser la librairie react-navigation.
+
+- Installation de React Navigation
+```bash
+npm install @react-navigation/native @react-navigation/native-stack
+npm install react-native-screens react-native-safe-area-context
+```
+
 ---
 ---
 ---
