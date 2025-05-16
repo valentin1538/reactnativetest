@@ -62,6 +62,15 @@ jobs:
               console.error("Error deleting artifacts:", error);
             }
     
+      - name:
+        run: |
+          cd android ; pwd ; ls -l
+          cd app ; pwd ; ls -l
+          cd build ; pwd ; ls -l
+          cd outputs ; pwd ; ls -l
+          cd apk ; pwd ; ls -l
+          cd release ; pwd ; ls -l
+
       - name: Upload APK
         uses: actions/upload-artifact@v4
         with:
