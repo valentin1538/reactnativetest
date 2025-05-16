@@ -56,9 +56,10 @@ npx react-native run-ios
 ## Android
 Générer une clé de test pour l'application, sinon utiliser votre clé
 ```bash
+cd android
 keytool -genkeypair -v -keystore my-release-key.keystore -alias my-key-alias -keyalg RSA -keysize 2048 -validity 10000
 ```
-lancer la commande depuis le dossier android, elle crée le fichier *my-release-key.keystore*  
+Cette commande crée le fichier *my-release-key.keystore*  
 
 Paramétrer le fichier gradle *android/app/build.gradle*
 ```gradle

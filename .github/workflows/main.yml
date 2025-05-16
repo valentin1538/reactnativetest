@@ -38,10 +38,35 @@ jobs:
           SIGNING_KEY_PASSWORD: ${{ secrets.ANDROID_KEY_PASSWORD }}
           SIGNING_STORE_PASSWORD: ${{ secrets.ANDROID_STORE_PASSWORD }}
 
+      - name: Delete previous build artifacts
+        uses: actions/github-script@v7
+        with:
+          script: |
+            try {
+              const artifacts = await github.rest.actions.listWorkflowRunArtifacts({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                run_id: context.runId,
+              });
+
+              for (const artifact of artifacts.data) {
+                if (artifact.name.startsWith('android-release-apk')) {
+                  await github.rest.actions.deleteArtifact({
+                    owner: context.repo.owner,
+                    repo: context.repo.repo,
+                    artifact_id: artifact.id,
+                  });
+                  console.log(`Deleted artifact: ${artifact.name}`);
+                }
+              }
+            } catch (error) {
+              console.error("Error deleting artifacts:", error);
+            }
+    
       - name: Upload APK
         uses: actions/upload-artifact@v4
         with:
-          name: android-release-apk
+          name: android-release-apk-${{ github.run_number }}
           path: android/app/build/outputs/apk/release/${{ env.APP_NAME }}.apk
 
   build-ios:
@@ -150,25 +175,30 @@ jobs:
         uses: actions/github-script@v7
         with:
           script: |
-            const artifacts = await github.rest.actions.listArtifactsForWorkflowRun({
-              owner: context.repo.owner,
-              repo: context.repo.repo,
-              run_id: context.runId,
-            });
-            for (const artifact of artifacts.data.artifacts) {
-              if (artifact.name.startsWith('ios-release-ipa')) { 
-                await github.rest.actions.deleteArtifact({
-                  owner: context.repo.owner,
-                  repo: context.repo.repo,
-                  artifact_id: artifact.id,
-                });
-                console.log(`Deleted artifact: ${artifact.name}`);
+            try {
+              const artifacts = await github.rest.actions.listWorkflowRunArtifacts({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                run_id: context.runId,
+              });
+
+              for (const artifact of artifacts.data) {
+                if (artifact.name.startsWith('ios-release-ipa')) {
+                  await github.rest.actions.deleteArtifact({
+                    owner: context.repo.owner,
+                    repo: context.repo.repo,
+                    artifact_id: artifact.id,
+                  });
+                  console.log(`Deleted artifact: ${artifact.name}`);
+                }
               }
+            } catch (error) {
+              console.error("Error deleting artifacts:", error);
             }
       
       - name: Upload IPA
         uses: actions/upload-artifact@v4
         with:
-          name: ios-release-ipa
+          name: ios-release-ipa-${{ github.run_number }}
           path: ios/build/ipa/${{ env.APP_NAME }}.ipa
 
