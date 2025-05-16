@@ -11,6 +11,9 @@ on:
 env:
   APP_NAME: "reactnativetest"
 
+permissions:
+  actions: write
+  
 jobs:
   build-android:
     name: Build Android
