@@ -85,20 +85,25 @@ jobs:
         uses: actions/github-script@v7
         with:
           script: |
-            const artifacts = await github.rest.actions.listArtifactsForWorkflowRun({
-              owner: context.repo.owner,
-              repo: context.repo.repo,
-              run_id: context.runId,
-            });
-            for (const artifact of artifacts.data.artifacts) {
-              if (artifact.name.startsWith('ios-build-')) { 
-                await github.rest.actions.deleteArtifact({
-                  owner: context.repo.owner,
-                  repo: context.repo.repo,
-                  artifact_id: artifact.id,
-                });
-                console.log(`Deleted artifact: ${artifact.name}`);
+            try {
+              const artifacts = await github.rest.actions.listWorkflowRunArtifacts({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                run_id: context.runId,
+              });
+
+              for (const artifact of artifacts.data) {
+                if (artifact.name.startsWith('ios-build-')) {
+                  await github.rest.actions.deleteArtifact({
+                    owner: context.repo.owner,
+                    repo: context.repo.repo,
+                    artifact_id: artifact.id,
+                  });
+                  console.log(`Deleted artifact: ${artifact.name}`);
+                }
               }
+            } catch (error) {
+              console.error("Error deleting artifacts:", error);
             }
 
       - name: Upload iOS build artifact
