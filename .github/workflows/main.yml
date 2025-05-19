@@ -43,12 +43,12 @@ jobs:
           SIGNING_KEY_PASSWORD: ${{ secrets.ANDROID_KEY_PASSWORD }}
           SIGNING_STORE_PASSWORD: ${{ secrets.ANDROID_STORE_PASSWORD }}
 
-      - name: Delete previous build artifacts
+      - name: Delete previous APK build artifacts
         uses: actions/github-script@v7
         with:
           script: |
             try {
-              const artifactsResponse = await github.rest.actions.listWorkflowArtifacts({
+              const artifactsResponse = await github.rest.actions.listWorkflowRunArtifacts({
                 owner: context.repo.owner,
                 repo: context.repo.repo,
               });
@@ -112,18 +112,19 @@ jobs:
           DEVELOPER_CERTIFICATE: ${{ secrets.IOS_DEVELOPER_CERTIFICATE }}
           CERTIFICATE_PASSWORD: ${{ secrets.IOS_CERTIFICATE_PASSWORD }}
 
-      - name: Delete previous build artifacts
+      - name: Delete previous ios build artifacts
         uses: actions/github-script@v7
         with:
           script: |
             try {
-              const artifacts = await github.rest.actions.listWorkflowRunArtifacts({
+              const artifactsResponse = await github.rest.actions.listWorkflowRunArtifacts({
                 owner: context.repo.owner,
                 repo: context.repo.repo,
-                run_id: context.runId,
               });
 
-              for (const artifact of artifacts.data.artifacts) {
+              const artifactsToDelete = artifactsResponse.data.artifacts.filter(artifact => artifact.workflow_run.id !== context.runId);
+
+              for (const artifact of artifactsToDelete) {
                 if (artifact.name.startsWith('ios-build-')) {
                   await github.rest.actions.deleteArtifact({
                     owner: context.repo.owner,
@@ -182,13 +183,14 @@ jobs:
         with:
           script: |
             try {
-              const artifacts = await github.rest.actions.listWorkflowRunArtifacts({
+              const artifactsResponse = await github.rest.actions.listWorkflowRunArtifacts({
                 owner: context.repo.owner,
                 repo: context.repo.repo,
-                run_id: context.runId,
               });
 
-              for (const artifact of artifacts.data.artifacts) {
+              const artifactsToDelete = artifactsResponse.data.artifacts.filter(artifact => artifact.workflow_run.id !== context.runId);
+
+              for (const artifact of artifactsToDelete) {
                 if (artifact.name.startsWith('ios-release-ipa')) {
                   await github.rest.actions.deleteArtifact({
                     owner: context.repo.owner,
