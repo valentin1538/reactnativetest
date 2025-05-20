@@ -34,10 +34,9 @@ jobs:
         with:
           script: |
             try {
-              const artifactsResponse = await github.request('GET /repos/{owner}/{repo}/actions/workflows/{workflow_id}/artifacts', {
+              const artifactsResponse = await github.request('GET /repos/{owner}/{repo}/actions/artifacts', {
                 owner: context.repo.owner,
                 repo: context.repo.repo,
-                workflow_id: context.workflow, // S'assurer que l'ID de l'exécution actuelle est utilisé
               });
 
               const artifactsToDelete = artifactsResponse.data.artifacts.filter(artifact => artifact.workflow_run.id !== context.runId);
