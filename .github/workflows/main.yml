@@ -238,9 +238,9 @@ jobs:
           path: ios/build/ipa/${{ env.APP_NAME }}.ipa
           retention-days: 7
 
-  deploy:
-    name: Deploy to App Stores
-    needs: [build-android, build-ios]
+  deploy-android:
+    name: Deploy to Android Stores
+    needs: build-android
     runs-on: ubuntu-latest
     if: github.ref == 'refs/heads/main' && github.event_name == 'push'
     
@@ -254,16 +254,40 @@ jobs:
           name: android-release-apk-${{ github.run_number }}
           path: artifacts/android
           
+      - name: Deploy to Android store
+        run: |
+          echo "TODO"
+            
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v1
+        with:
+          files: |
+            artifacts/android/${{ env.APP_NAME }}.apk
+          name: Release android ${{ github.run_number }}
+          tag_name: v1.0.${{ github.run_number }}-android
+          body: |
+            Release automatique générée par GitHub Actions.
+            
+            Commit: ${{ github.sha }}
+        env:
+          GITHUB_TOKEN: ${{ secrets.REACTNATIVETEST_TOKEN }}
+
+  deploy-ios:
+    name: Deploy to App Stores
+    needs: build-ios
+    runs-on: ubuntu-latest
+    if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        
       - name: Download iOS IPA
         uses: actions/download-artifact@v4
         with:
           name: ios-release-ipa-${{ github.run_number }}
           path: artifacts/ios
           
-      - name: Deploy to Android store
-        run: |
-          echo "TODO"
-            
       - name: Deploy to iOS store
         run: |
           echo "TODO"
@@ -272,10 +296,9 @@ jobs:
         uses: softprops/action-gh-release@v1
         with:
           files: |
-            artifacts/android/${{ env.APP_NAME }}.apk
             artifacts/ios/${{ env.APP_NAME }}.ipa
-          name: Release ${{ github.run_number }}
-          tag_name: v1.0.${{ github.run_number }}
+          name: Release iOS ${{ github.run_number }}
+          tag_name: v1.0.${{ github.run_number }}-ios
           body: |
             Release automatique générée par GitHub Actions.
             
