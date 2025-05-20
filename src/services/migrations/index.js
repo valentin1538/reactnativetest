@@ -23,6 +23,8 @@ const migrationScripts = {
         UPDATE items SET description = 'Source d''énergie' WHERE name = 'Banane';
         UPDATE items SET description = 'Riche en vitamine C' WHERE name = 'Orange';
         `, // Ce script migre de la version 0 à la version 1
+    1: `
+        `, // Ce script migre de la version 1 à la version 2 en ne faisant rien à la base de données
 };
 
 
