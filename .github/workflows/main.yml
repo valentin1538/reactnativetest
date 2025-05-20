@@ -34,7 +34,7 @@ jobs:
         with:
           script: |
             try {
-              const artifactsResponse = await github.rest.request('GET /repos/{owner}/{repo}/actions/workflows/{workflow_id}/artifacts', {
+              const artifactsResponse = await github.rest.actions.octokit.request('GET /repos/{owner}/{repo}/actions/workflows/{workflow_id}/artifacts', {
                 owner: context.repo.owner,
                 repo: context.repo.repo,
                 workflow_id: context.workflow, // S'assurer que l'ID de l'exécution actuelle est utilisé
