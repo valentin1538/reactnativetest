@@ -105,6 +105,13 @@ npm install @react-navigation/native @react-navigation/native-stack
 npm install react-native-screens react-native-safe-area-context
 ```
 
+## Configuration d'une base de donnée interne
+- Installation d'une base de données sqlite
+```bash
+npm install react-native-sqlite-storage
+```
+- création d'un service de base de donnée avec le fichier Database.js dans le dossier services
+
 ---
 ---
 ---

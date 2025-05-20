@@ -239,7 +239,7 @@ jobs:
           retention-days: 7
 
   deploy-android:
-    name: Deploy to Android Stores
+    name: Deploy to Android Store
     needs: build-android
     runs-on: ubuntu-latest
     if: github.ref == 'refs/heads/main' && github.event_name == 'push'
@@ -273,7 +273,7 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.REACTNATIVETEST_TOKEN }}
 
   deploy-ios:
-    name: Deploy to App Stores
+    name: Deploy to iOS Store
     needs: build-ios
     runs-on: ubuntu-latest
     if: github.ref == 'refs/heads/main' && github.event_name == 'push'
