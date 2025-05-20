@@ -10,6 +10,7 @@ on:
 # Déclaration des variables d'environnement globales
 env:
   APP_NAME: "reactnativetest"
+  NODE_VERSION: '18.x'
 
 permissions:
   actions: write
@@ -24,14 +25,25 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
 
-      - name: Set up Node.js
+      - name: Set up Node.js ${{ env.NODE_VERSION }}
         uses: actions/setup-node@v4
         with:
-          node-version: '18.x'
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
+
+      - name: Cache Gradle dependencies
+        uses: actions/cache@v3
+        with:
+          path: |
+            ~/.gradle/caches
+            ~/.gradle/wrapper
+          key: ${{ runner.os }}-gradle-${{ hashFiles('**/*.gradle*', '**/gradle-wrapper.properties') }}
+          restore-keys: |
+            ${{ runner.os }}-gradle-
 
       - name: Install dependencies
         run: |
-          npm install
+          npm ci
           cd android && ./gradlew clean
 
       - name: Build APK
@@ -53,16 +65,18 @@ jobs:
                 repo: context.repo.repo,
               });
 
-              const artifactsToDelete = artifactsResponse.data.artifacts.filter(artifact => artifact.workflow_run.id !== context.runId);
+              const artifactsToDelete = artifactsResponse.data.artifacts.filter(artifact => 
+                artifact.workflow_run.id !== context.runId && 
+                artifact.name.startsWith('android-release-apk')
+              );
+
               for (const artifact of artifactsToDelete) {
-                if (artifact.name.startsWith('android-release-apk')) {
-                  await github.rest.actions.deleteArtifact({
-                    owner: context.repo.owner,
-                    repo: context.repo.repo,
-                    artifact_id: artifact.id,
-                  });
+                await github.rest.actions.deleteArtifact({
+                  owner: context.repo.owner,
+                  repo: context.repo.repo,
+                  artifact_id: artifact.id,
+                });
                   console.log(`Deleted artifact: ${artifact.name}`);
-                }
               }
             } catch (error) {
               console.error("Error deleting artifacts:", error);
@@ -73,6 +87,7 @@ jobs:
         with:
           name: android-release-apk-${{ github.run_number }}
           path: android/app/build/outputs/apk/release/${{ env.APP_NAME }}.apk
+          retention-days: 7
 
   build-ios:
     name: Build iOS
@@ -82,17 +97,27 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
 
-      - name: Set up Node.js
+      - name: Set up Node.js ${{ env.NODE_VERSION }}
         uses: actions/setup-node@v4
         with:
-          node-version: '18.x'
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
 
+      - name: Cache CocoaPods
+        uses: actions/cache@v3
+        with:
+          path: ios/Pods
+          key: ${{ runner.os }}-pods-${{ hashFiles('ios/Podfile.lock') }}
+          restore-keys: |
+            ${{ runner.os }}-pods-
+  
       - name: Install dependencies
-        run: npm install
+        run: npm ci
 
       - name: Install CocoaPods
         run: |
           cd ios
+          bundle config path vendor/bundle
           bundle install --retry 3 --jobs 4
           bundle exec pod install
 
@@ -121,17 +146,18 @@ jobs:
                 repo: context.repo.repo,
               });
 
-              const artifactsToDelete = artifactsResponse.data.artifacts.filter(artifact => artifact.workflow_run.id !== context.runId);
+              const artifactsToDelete = artifactsResponse.data.artifacts.filter(artifact => 
+                artifact.workflow_run.id !== context.runId && 
+                artifact.name.startsWith('ios-build-')
+              );
 
               for (const artifact of artifactsToDelete) {
-                if (artifact.name.startsWith('ios-build-')) {
-                  await github.rest.actions.deleteArtifact({
-                    owner: context.repo.owner,
-                    repo: context.repo.repo,
-                    artifact_id: artifact.id,
-                  });
-                  console.log(`Deleted artifact: ${artifact.name}`);
-                }
+                await github.rest.actions.deleteArtifact({
+                  owner: context.repo.owner,
+                  repo: context.repo.repo,
+                  artifact_id: artifact.id,
+                });
+                console.log(`Deleted artifact: ${artifact.name}`);
               }
             } catch (error) {
               console.error("Error deleting artifacts:", error);
@@ -142,6 +168,7 @@ jobs:
         with:
           name: ios-build-${{ github.run_number }}
           path: ios/build
+          retention-days: 7
   
       - name: Create ExportOptions.plist
         run: |
@@ -187,17 +214,18 @@ jobs:
                 repo: context.repo.repo,
               });
 
-              const artifactsToDelete = artifactsResponse.data.artifacts.filter(artifact => artifact.workflow_run.id !== context.runId);
+              const artifactsToDelete = artifactsResponse.data.artifacts.filter(artifact => 
+                artifact.workflow_run.id !== context.runId && 
+                artifact.name.startsWith('ios-release-ipa')
+              );
 
               for (const artifact of artifactsToDelete) {
-                if (artifact.name.startsWith('ios-release-ipa')) {
-                  await github.rest.actions.deleteArtifact({
-                    owner: context.repo.owner,
-                    repo: context.repo.repo,
-                    artifact_id: artifact.id,
-                  });
-                  console.log(`Deleted artifact: ${artifact.name}`);
-                }
+                await github.rest.actions.deleteArtifact({
+                  owner: context.repo.owner,
+                  repo: context.repo.repo,
+                  artifact_id: artifact.id,
+                });
+                console.log(`Deleted artifact: ${artifact.name}`);
               }
             } catch (error) {
               console.error("Error deleting artifacts:", error);
@@ -208,4 +236,49 @@ jobs:
         with:
           name: ios-release-ipa-${{ github.run_number }}
           path: ios/build/ipa/${{ env.APP_NAME }}.ipa
+          retention-days: 7
 
+  deploy:
+    name: Deploy to App Stores
+    needs: [build-android, build-ios]
+    runs-on: ubuntu-latest
+    if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        
+      - name: Download Android APK
+        uses: actions/download-artifact@v4
+        with:
+          name: android-release-apk-${{ github.run_number }}
+          path: artifacts/android
+          
+      - name: Download iOS IPA
+        uses: actions/download-artifact@v4
+        with:
+          name: ios-release-ipa-${{ github.run_number }}
+          path: artifacts/ios
+          
+      - name: Deploy to Android store
+        run: |
+          echo "TODO"
+            
+      - name: Deploy to iOS store
+        run: |
+          echo "TODO"
+
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v1
+        with:
+          files: |
+            artifacts/android/${{ env.APP_NAME }}.apk
+            artifacts/ios/${{ env.APP_NAME }}.ipa
+          name: Release ${{ github.run_number }}
+          tag_name: v1.0.${{ github.run_number }}
+          body: |
+            Release automatique générée par GitHub Actions.
+            
+            Commit: ${{ github.sha }}
+        env:
+          GITHUB_TOKEN: ${{ secrets.REACTNATIVETEST_TOKEN }}
