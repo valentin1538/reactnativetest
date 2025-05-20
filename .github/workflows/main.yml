@@ -48,7 +48,7 @@ jobs:
         with:
           script: |
             try {
-              const artifactsResponse = await github.rest.actions.listArtifactsForWorkflowRun({
+              const artifactsResponse = await github.rest.actions.listWorkflowRunArtifacts({
                 owner: context.repo.owner,
                 repo: context.repo.repo,
                 run_id: context.runId, // S'assurer que l'ID de l'exécution actuelle est utilisé
@@ -118,7 +118,7 @@ jobs:
         with:
           script: |
             try {
-              const artifactsResponse = await github.rest.actions.listArtifactsForWorkflowRun({
+              const artifactsResponse = await github.rest.actions.listWorkflowRunArtifacts({
                 owner: context.repo.owner,
                 repo: context.repo.repo,
                 run_id: context.runId, // S'assurer que l'ID de l'exécution actuelle est utilisé
@@ -185,7 +185,7 @@ jobs:
         with:
           script: |
             try {
-              const artifactsResponse = await github.rest.actions.listArtifactsForWorkflowRun({
+              const artifactsResponse = await github.rest.actions.listWorkflowRunArtifacts({
                 owner: context.repo.owner,
                 repo: context.repo.repo,
                 run_id: context.runId, // S'assurer que l'ID de l'exécution actuelle est utilisé
