@@ -199,6 +199,7 @@ jobs:
             </plist>
   
       - name: Export IPA from archive
+        if: false
         run: |
             cd ios
             xcodebuild -exportArchive -archivePath build/${{ env.APP_NAME }}.xcarchive -exportPath build/ipa \
